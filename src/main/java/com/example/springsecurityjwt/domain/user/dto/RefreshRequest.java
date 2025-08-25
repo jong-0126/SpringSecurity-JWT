@@ -3,12 +3,10 @@ package com.example.springsecurityjwt.domain.user.dto;
 import lombok.Getter;
 
 @Getter
-public class Token {
-    private final String accessToken;
+public class RefreshRequest {
     private final String refreshToken;
 
-    public Token(String accessToken, String refreshToken) {
-        this.accessToken = accessToken;
+    public RefreshRequest(String refreshToken) {
         this.refreshToken = refreshToken;
     }
 }

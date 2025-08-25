@@ -18,6 +18,7 @@ public class JwtUtil {
 
     private String secret = "mysecretkeyforsigningjwtverysecure123";
     private long expirationMs = 3600000;
+    private long refreshTokenExpireMs = 1000L * 60 * 60 * 24 * 7;
 
     private Key signingKey;
 
@@ -34,6 +35,18 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String createRefreshToken(String username){
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + refreshTokenExpireMs);
+
+        return Jwts.builder()
+                .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(signingKey, SignatureAlgorithm.HS256)
