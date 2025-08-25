@@ -30,7 +30,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getMyInfo(@AuthenticationPrincipal UserEntity user){
+    public ResponseEntity<UserResponseDto> getMyInfo(@AuthenticationPrincipal UserEntity user) {
         return ResponseEntity.ok(new UserResponseDto(user.getId(), user.getUsername(), user.getUserRole()));
     }
 }

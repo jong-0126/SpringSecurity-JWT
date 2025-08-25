@@ -7,6 +7,10 @@ import java.util.Arrays;
 public enum UserRole {
     USER, ADMIN;
 
+    public String toRoleName(){
+        return "ROLE_" + this.name();
+    }
+
     @JsonCreator
     public static UserRole forValue(String value) {
         return Arrays.stream(UserRole.values())
