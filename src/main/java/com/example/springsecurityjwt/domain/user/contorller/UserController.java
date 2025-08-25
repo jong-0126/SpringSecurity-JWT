@@ -7,7 +7,6 @@ import com.example.springsecurityjwt.domain.user.repository.UserRepository;
 import com.example.springsecurityjwt.domain.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
