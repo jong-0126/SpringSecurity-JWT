@@ -5,37 +5,38 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
-import io.lettuce.core.RedisClient;
-import io.lettuce.core.api.StatefulRedisConnection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
-@RequiredArgsConstructor
 public class RateLimitConfig {
 
-    // ip 주소 또는 사용자 ID 등을 key로 하고, Bucket 객체를 value로 가지는 메모리 기반 저장소
-    // ConcurrentHashMap으로 멀티스레드 환경에서도 안전하게 Bucket을 저장하고 조회하기 위해 사용
     private final Map<String, Bucket> bucketCache = new ConcurrentHashMap<>();
 
-    // 클라이언트 ip로 버킷을 가져오거나, 없으면 새로 생성
-    public Bucket resolveBucket(String ip) {
-        // 키가 없을 때만 newBucket(ip) 호출하여 생성 -> 중복 생성 방지
-        return bucketCache.computeIfAbsent(ip, this::newBucket);
+    public Bucket resolveBucket(String username, String role) {
+        String key = username + ":" + role;
+
+        return bucketCache.computeIfAbsent(key, k -> {
+            if ("ROLE_ADMIN".equals(role)) {
+                return newBucket(100); // 관리자: 분당 100회
+            } else if ("ROLE_USER".equals(role)) {
+                return newBucket(10);  // 일반 사용자: 분당 10회
+            } else {
+                return newBucket(5);   // 그 외
+            }
+        });
     }
 
-    // 새로운 버킷 생성 빌더 시작
-    private Bucket newBucket(String key) {
+    private Bucket newBucket(int capacity) {
         return Bucket4j.builder()
-                // 총 10개 저장 가능, 1분 마다 10개 토큰 재충전 즉, 1분에 10번 요청 허용됨
-                .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(capacity, Refill.intervally(capacity, Duration.ofMinutes(1))))
                 .build();
     }
 }
+

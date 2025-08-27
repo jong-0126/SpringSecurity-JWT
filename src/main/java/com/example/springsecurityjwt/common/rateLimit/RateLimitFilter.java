@@ -1,38 +1,76 @@
 package com.example.springsecurityjwt.common.rateLimit;
 
 import com.example.springsecurityjwt.config.RateLimitConfig;
+import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.Refill;
+import io.github.bucket4j.distributed.proxy.ProxyManager;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 
 @Component
 @RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    // 요청마다 ip 별 Bucket을 꺼내기 위해 사용
     private final RateLimitConfig rateLimitConfig;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 요청자의 ip 주소를 가져옴
-        String ip = request.getRemoteAddr();
-        // ip에 대한 요청 제한 버킷을 가져옴
-        Bucket bucket = rateLimitConfig.resolveBucket(ip);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        // 1개의 요청 허용량을 사용 시도, 가능하면 다음 필터로 넘어감
-        if(bucket.tryConsume(1)){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String path = request.getRequestURI();
+        if (path.startsWith("/users/login") || path.startsWith("/users/register")) {
             filterChain.doFilter(request, response);
-        } else{
-            // 실패하면 429 Too Many Requests 에러 응답 반환
-            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value()); // 429
+            return;
+        }
+
+        String username = "anonymous";
+        String role = "GUEST";
+
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            Object principal = auth.getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                username = userDetails.getUsername();
+
+                List<String> roles = userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList();
+
+                if (roles.contains("ROLE_ADMIN")) {
+                    role = "ROLE_ADMIN";
+                } else if (roles.contains("ROLE_USER")) {
+                    role = "ROLE_USER";
+                } else {
+                    role = "GUEST";
+                }
+            }
+        }
+
+        Bucket bucket = rateLimitConfig.resolveBucket(username, role);
+
+        if (bucket.tryConsume(1)) {
+            filterChain.doFilter(request, response);
+        } else {
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.getWriter().write("Too many requests");
         }
     }
