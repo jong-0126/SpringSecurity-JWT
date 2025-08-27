@@ -1,6 +1,6 @@
 package com.example.springsecurityjwt.domain.user.contorller;
 
-import com.example.springsecurityjwt.domain.jwt.JwtUtil;
+import com.example.springsecurityjwt.common.jwt.JwtUtil;
 import com.example.springsecurityjwt.domain.user.dto.*;
 import com.example.springsecurityjwt.domain.user.entity.UserEntity;
 import com.example.springsecurityjwt.domain.user.repository.UserRepository;

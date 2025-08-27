@@ -1,4 +1,4 @@
-package com.example.springsecurityjwt.domain.jwt;
+package com.example.springsecurityjwt.common.jwt;
 
 import com.example.springsecurityjwt.domain.user.entity.UserEntity;
 import com.example.springsecurityjwt.domain.user.repository.UserRepository;

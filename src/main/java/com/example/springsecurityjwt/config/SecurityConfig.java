@@ -1,10 +1,9 @@
 package com.example.springsecurityjwt.config;
 
-import com.example.springsecurityjwt.domain.jwt.JwtFilter;
+import com.example.springsecurityjwt.common.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,6 +27,7 @@ public class SecurityConfig {
             .authorizeHttpRequests()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/users/register", "/users/login").permitAll()
+                .requestMatchers("/test/hello").permitAll()
                 .anyRequest().authenticated()
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)

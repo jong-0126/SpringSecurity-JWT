@@ -1,13 +1,12 @@
 package com.example.springsecurityjwt.domain.user.service;
 
-import com.example.springsecurityjwt.domain.jwt.JwtUtil;
+import com.example.springsecurityjwt.common.jwt.JwtUtil;
 import com.example.springsecurityjwt.domain.user.dto.Token;
 import com.example.springsecurityjwt.domain.user.dto.UserRequestDto;
 import com.example.springsecurityjwt.domain.user.dto.UserResponseDto;
 import com.example.springsecurityjwt.domain.user.entity.UserEntity;
 import com.example.springsecurityjwt.domain.user.entity.UserRole;
 import com.example.springsecurityjwt.domain.user.repository.UserRepository;
-import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
